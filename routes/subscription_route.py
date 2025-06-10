@@ -11,6 +11,7 @@ from Database.plans import get_plan_by_id
 import urllib.parse
 from utils.payment import Payment
 from utils.verify import is_valid_signature
+import asyncio
 
 ACCOUNT_NUMBER = os.environ.get("ACCOUNT_NUMBER")
 ACCOUNT_NAME = os.environ.get("ACCOUNT_NAME")
@@ -73,18 +74,26 @@ class RequestCache(LRUCache):
 class OrderCodeCache(LRUCache):
     def __init__(self, capacity: int, expire_seconds: int):
         super().__init__(capacity, expire_seconds)
+        self.lock = Lock()
 
-    def get_order_code(self, orderID: str):
-        try:
-            return self.get(orderID)
-        except KeyError:
-            return None
+    async def get_order_code(self, orderID: str):
+        async with self.lock:
+            try:
+                return self.get(orderID)
+            except KeyError:
+                return None
     
-    def put_order_code(self, orderID: str, data: dict):
-        self.put(orderID, data)
+    async def put_order_code(self, orderID: str, data: dict):
+        async with self.lock:
+            self.put(orderID, data)
 
-    def delete_order_code(self, orderID: str):
-        self.delete(orderID)
+    async def delete_order_code(self, orderID: str):
+        async with self.lock:
+            self.delete(orderID)
+
+    async def get_all_order_codes(self):
+        async with self.lock:
+            return self.cache.keys()
 
 class SubscriptionRoute(APIRouter):
     def __init__(self, *args, **kwargs):
@@ -100,8 +109,20 @@ class SubscriptionRoute(APIRouter):
         self.userdb = MongoDB(MONGODB_URL.format(username=urllib.parse.quote_plus(MONGODB_USERNAME), password=urllib.parse.quote_plus(MONGODB_USERPASSWORD)))
         self.payment = Payment()
 
+    async def auto_cancel_transaction(self):
+        while True:
+            await asyncio.sleep(60)
+            for order_code in await self.order_code_cache.get_all_order_codes():
+                order_data = await self.order_code_cache.get_order_code(order_code)
+                if order_data:
+                    if order_data.get("created_at") + 300 < datetime.now(timezone.utc).timestamp():
+                        self.payment.cancel(order_code)
+                        await self.order_code_cache.delete_order_code(order_code)
+
     async def lifespan(self):
         await self.userdb.init_db()
+        asyncio.create_task(self.auto_cancel_transaction())
+
 
     async def check_subscription_expiry(self, subscription: dict) -> bool:
         """Check if a subscription is expired and update its status if needed."""
@@ -133,31 +154,40 @@ class SubscriptionRoute(APIRouter):
             raise HTTPException(status_code=400, detail="Invalid plan ID")
 
         existing_request = await self.request_cache.get_request(request.user_id)
+
         if existing_request:
-            return RegisterResponse(
-                success=False,
-                qr_code=existing_request.get("qr_code"),
-                message="User already has a pending request"
-            )
+            if existing_request.get("plan_id") == request.plan_id:
+                return RegisterResponse(
+                    success=False,
+                    qr_code=existing_request.get("qr_code"),
+                    message="User already has a pending request"
+                )
+            else:
+                await self.request_cache.delete_request(request.user_id)
+                self.payment.cancel(existing_request.get("order_code"))
+                await self.order_code_cache.delete_order_code(existing_request.get("order_code"))
+                
         
         items = self.payment.choose_items(request.plan_id)
         if not items:
             raise HTTPException(status_code=400, detail="Invalid plan ID")
 
-        payment_data = self.payment.create(items)
+        payment_data = self.payment.create(items, plan.get("price"))
 
         request_data = {
             "plan_id": request.plan_id,
             "timestamp": datetime.now(timezone.utc).isoformat(),
             "qr_code": payment_data.get("qr_code"),
+            "order_code": payment_data.get("order_code"),
         }
         order_data = {
             "user_id": request.user_id,
             "plan_id": request.plan_id,
+            "created_at": datetime.now(timezone.utc).timestamp(),
         }
 
         await self.request_cache.add_request(request.user_id, request_data)
-        self.order_code_cache.put_order_code(payment_data.get("order_code"), order_data)
+        await self.order_code_cache.put_order_code(payment_data.get("order_code"), order_data)
 
         await send( await build_transaction_embed(
             user_id=request.user_id,
@@ -220,11 +250,11 @@ class SubscriptionRoute(APIRouter):
             return {"success": False, "message": "Invalid signature"}
                 
         if self.payment.check_payment_status(data):
-            order_data = self.order_code_cache.get_order_code(data.get("orderCode"))
+            order_data = await self.order_code_cache.get_order_code(data.get("orderCode"))
             if not order_data:
                 return {"success": False, "message": "Order not found"}
             await self.userdb.create_subscription(order_data.get("user_id"), order_data.get("plan_id"))
-            self.order_code_cache.delete_order_code(data.get("orderCode"))
+            await self.order_code_cache.delete_order_code(data.get("orderCode"))
             return {"success": True}
 
 

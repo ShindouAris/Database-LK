@@ -1,0 +1,188 @@
+[
+    {
+        "id": 31,
+        "date": "2025-06-06",
+        "title": "Nâng cấp Backend",
+        "description": "Có được các endpoint quan trọng của locket, tôi tiến hành cải tiến hệ thống Backend"
+    },
+    {
+        "id": 30,
+        "date": "2025-06-04",
+        "title": "Kanade đã patch Locket Dio",
+        "description": "Kanade đã patch Locket Dio, các limit đã được loại bỏ"
+    },
+    {
+        "id": 29,
+        "date": "2025-05-28",
+        "title": "Cập nhật và áp dụng quyền lợi thành viên",
+        "description": "Nhằm duy trì hoạt động ổn định của website và mang lại trải nghiệm tốt hơn cho người dùng, mình đã triển khai hệ thống quyền lợi dành riêng cho các thành viên. Những quyền lợi này sẽ giúp bạn có thêm tính năng nâng cao, ưu tiên truy cập và nhiều tiện ích thú vị khác. Cảm ơn bạn đã đồng hành và ủng hộ mình!"
+    },
+    {
+        "id": 28,
+        "date": "2025-05-27",
+        "title": "Cập nhật tính năng mới “Chọn bạn bè có thể xem”",
+        "description": "Nhận thấy điều này rất quan trọng nên tôi đã nghiên cứu, tìm hiểu sau cùng là tích hợp vào để sử dụng dễ dàng. Enjoy"
+    },
+    {
+        "id": 27,
+        "date": "2025-05-26",
+        "title": "Tính năng mới lưu phiên đăng nhập",
+        "description": "Nhận thấy trải nghiệm bị giảm xuống khi mà phải đăng nhập lại nhiều lần và bị lỗi khi đăng bài do hết phiên đăng nhập nên tôi đã tích hợp tính năng này vào."
+    },
+    {
+        "id": 26,
+        "date": "2025-05-25",
+        "title": "Thêm mới tính năng bạn bè",
+        "description": "Nâng cấp hệ thống server với API mới cho phép lấy và lọc danh sách bạn bè một cách linh hoạt và nhanh chóng, giúp người dùng dễ dàng quản lý và tìm kiếm bạn bè trên website."
+    },
+    {
+        "id": 25,
+        "date": "2025-05-22",
+        "title": "Đưa tính năng forms caption hoạt động trở lại",
+        "description": "Vì một số lý do bất khả kháng, để nguyên thì chạy ngon, nhưng chỉ cần sửa một tí là lỗi bung như pháo. Sau một hồi cày cuốc, mình đã debug và tối ưu lại tính năng này – giờ thì mượt mà cực kỳ, cảm giác thật \"enjoy cái moment này\". Tralalero Tralala!"
+    },
+    {
+        "id": 24,
+        "date": "2025-05-21",
+        "title": "Cập nhật thêm Caption",
+        "description": "Tung tung tung Sahur. Có thêm danh sách caption icon mới hãy vào tab Custome Studio để xem và trải nghiệm nhé."
+    },
+    {
+        "id": 23,
+        "date": "2025-05-16",
+        "title": "Nâng cấp server lên V1.0.0",
+        "description": "Để nâng cao chất lượng dự án, tôi quyết định tối ưu hóa hiệu suất xử lý và cải tiến logic, giúp hệ thống dễ dàng mở rộng, bảo trì và khắc phục lỗi trong tương lai.\n- Phiên bản API V0.3.1 => V1.0.0"
+    },
+    {
+        "id": 22,
+        "date": "2025-05-11",
+        "title": "💐 Mother’s Day đã có mặt",
+        "description": "Chúc mừng những người mẹ tuyệt vời – những người luôn yêu thương, che chở và đồng hành cùng chúng ta. Hãy dành thời gian để nói lời yêu thương và biết ơn hôm nay. ❤️"
+    },
+    {
+        "id": 21,
+        "date": "2025-05-07",
+        "title": "Chỉnh sửa và nâng cấp giao diện LocketUI",
+        "description": "Cải tiến logic để cho phép gửi nhiều bài viết đồng thời, giúp tối ưu hóa quy trình tải lên mà không cần phải chờ đợi từng bài hoàn thành trước khi bắt đầu bài tiếp theo.\nNâng cấp giao diện cho dễ dùng và mượt mà hơn.\n"
+    },
+    {
+        "id": 20,
+        "date": "2025-04-29",
+        "title": "🇻🇳 Chào mừng 30/4!",
+        "description": "Hòa cùng không khí lịch sử 30/4, hãy gửi lời chúc ý nghĩa và lan tỏa niềm tự hào dân tộc qua những tấm hình rực rỡ."
+    },
+    {
+        "id": 19,
+        "date": "2025-04-22",
+        "title": "🌎 Earth Day đã có mặt!",
+        "description": "Hãy cùng nhau bảo vệ hành tinh xanh bằng cách lan tỏa thông điệp yêu thiên nhiên qua các khoảnh khắc đầy cảm hứng."
+    },
+    {
+        "id": 18,
+        "date": "2025-04-20",
+        "title": "🐣 Happy Easter đã có mặt!",
+        "description": "Cùng lan tỏa không khí Phục Sinh với theme rực rỡ và lời chúc an lành đến mọi người."
+    },
+    {
+        "id": 3,
+        "date": "2025-04-03",
+        "title": "Xây dựng hệ thống backend",
+        "description": "Nghiên cứu cách thức hoạt động và phát triển API.\nCấu trúc code theo mô hình MVC để dễ dàng bảo trì và mở rộng."
+    },
+    {
+        "id": 17,
+        "date": "2025-03-19",
+        "title": "Sửa lỗi giao diện caption trên LocketUI",
+        "description": "Lỗi là phải sửa, thật khó chịu khi caption ngắn mà bị xuống dòng."
+    },
+    {
+        "id": 16,
+        "date": "2025-03-18",
+        "title": "Thêm tính năng gửi email góp ý",
+        "description": "Bạn muốn góp ý? Tới ngay giao diện bên phải của Locket UI."
+    },
+    {
+        "id": 15,
+        "date": "2025-03-18",
+        "title": "Tích hợp thêm chụp ảnh/quay video trực tiếp",
+        "description": "Giờ đây quay video hay chụp ảnh nhanh hơn rồi sử dụng giống như app Locket thực thụ."
+    },
+    {
+        "id": 14,
+        "date": "2025-03-16",
+        "title": "Cập nhật tính năng theo dõi trạng thái Server",
+        "description": "Ra mắt tính năng mới giúp người dùng dễ dàng theo dõi và kiểm tra trạng thái hoạt động của Server, nâng cao khả năng quản lý và tối ưu hiệu suất hệ thống.\n\n"
+    },
+    {
+        "id": 13,
+        "date": "2025-03-16",
+        "title": "Cải thiện và tối ưu giao diện",
+        "description": "Cập nhật và tối ưu giao diện để mang lại trải nghiệm người dùng tốt hơn, giúp nền tảng trở nên dễ sử dụng và mượt mà hơn."
+    },
+    {
+        "id": 12,
+        "date": "2025-03-15",
+        "title": "Bổ sung trang About & Docs",
+        "description": "Bổ sung thêm trang giới thiệu về Dio và trang tài liệu (Docs) để người dùng dễ dàng tìm hiểu và sử dụng nền tảng.\n\n"
+    },
+    {
+        "id": 11,
+        "date": "2025-03-13",
+        "title": "Nâng cấp Server & API V2.0",
+        "description": "Hệ thống đã hỗ trợ đăng ảnh, video kèm chú thích có màu sắc tùy chỉnh. Đồng thời tối ưu dung lượng để hạn chế lỗi trong quá trình gửi yêu cầu."
+    },
+    {
+        "id": 10,
+        "date": "2025-03-12",
+        "title": "Xây dựng giao diện ứng dụng Locket",
+        "description": "Xây dựng giao diện Locket để tối ưu trải nghiệm giống như trên app, thao tác dễ dàng hơn.\n\n"
+    },
+    {
+        "id": 9,
+        "date": "2025-03-09",
+        "title": "Triển khai website lên Firebase Hosting",
+        "description": "Hoàn tất việc triển khai website lên Firebase Hosting! Giờ đây, trang web có thể hoạt động trực tuyến một cách nhanh chóng và ổn định, sẵn sàng để mọi người truy cập."
+    },
+    {
+        "id": 8,
+        "date": "2025-03-08",
+        "title": "Ra mắt tính năng Theme Caption",
+        "description": "Giờ đây, bạn có thể tùy chỉnh giao diện theo phong cách riêng! Hệ thống theme mới giúp trang web trở nên sống động và cá nhân hóa hơn bao giờ hết."
+    },
+    {
+        "id": 7,
+        "date": "2025-03-07",
+        "title": "Thêm API GetLastestMoment",
+        "description": "Phát triển và triển khai API GetLastestMoment để lấy bài viết mới nhất từ bạn bè trên Locket"
+    },
+    {
+        "id": 5,
+        "date": "2025-03-06",
+        "title": "Deploy API lên máy chủ",
+        "description": "Hoàn tất việc deploy API lên server production, đảm bảo hệ thống hoạt động ổn định và bảo mật.\n\n✅ Các API đã sẵn sàng:\n- `/login` - Xác thực người dùng\n- `/auth` - Kiểm tra phiên đăng nhập\n- `/logout` - Đăng xuất an toàn\n- `/getinfo` - Lấy thông tin chi tiết Locket\n- `/post` - Tải phương tiện lên Locket"
+    },
+    {
+        "id": 6,
+        "date": "2025-03-06",
+        "title": "Thêm trang Timeline",
+        "description": "Triển khai và kiểm thử trang Timeline để hiển thị lịch sử cập nhật."
+    },
+    {
+        "id": 4,
+        "date": "2025-03-05",
+        "title": "Test API & kiểm tra lỗi",
+        "description": "Chạy thử nghiệm các API trên môi trường staging để kiểm tra tính ổn định, hiệu suất và bảo mật.\nTiến hành debug và tối ưu hóa phản hồi API."
+    },
+    {
+        "id": 2,
+        "date": "2025-03-03",
+        "title": "Thiết kế giao diện người dùng",
+        "description": "Thiết kế và tối ưu UI/UX với phong cách hiện đại, đảm bảo responsive trên mọi thiết bị.\n✅ Tích hợp chế độ sáng/tối để nâng cao trải nghiệm.\n📌 Các trang được thiết kế:\n- 🏠 Home\n- 🔑 Login\n- 👤 Profile\n- 📝 Post"
+    },
+    {
+        "id": 1,
+        "date": "2025-03-02",
+        "title": "Bắt đầu dự án Locket Dio",
+        "description": "Chính thức bắt đầu hành trình phát triển Locket Dio! 🚀\n✅ Thiết lập repository trên Git.\n✅ Lên kế hoạch phát triển và phân chia công việc.\n✅ Công nghệ sử dụng: Vite ⚡ + React ⚛️."
+    }
+]

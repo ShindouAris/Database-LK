@@ -1,0 +1,7 @@
+fastapi
+uvicorn
+pydantic
+python-dotenv
+disnake
+motor>=3.3.2
+payos

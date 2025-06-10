@@ -1,7 +1,7 @@
 import json
 import pathlib
 
-DATA_DIR = pathlib.Path(__file__).parent / "Data"
+DATA_DIR = pathlib.Path(__file__).parent.parent / "Data"
 
 def read_json_file(file_path: str):
     with open(file_path, "r", encoding="utf-8") as file:

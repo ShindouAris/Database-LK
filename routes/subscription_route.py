@@ -12,12 +12,12 @@ import urllib.parse
 from utils.payment import Payment
 from utils.verify import is_valid_signature
 
-ACCOUNT_NUMBER = os.getenv("ACCOUNT_NUMBER")
-ACCOUNT_NAME = os.getenv("ACCOUNT_NAME")
-MONGODB_URL = os.getenv("MONGODB_URL")
-MONGODB_USERPASSWORD = os.getenv("MONGODB_USERPASSWORD")
-MONGODB_USERNAME = os.getenv("MONGODB_USERNAME")
-ADMIN_KEY = os.getenv("ADMIN_KEY")
+ACCOUNT_NUMBER = os.environ.get("ACCOUNT_NUMBER")
+ACCOUNT_NAME = os.environ.get("ACCOUNT_NAME")
+MONGODB_URL = os.environ.get("MONGODB_URL")
+MONGODB_USERPASSWORD = os.environ.get("MONGODB_USERPASSWORD")
+MONGODB_USERNAME = os.environ.get("MONGODB_USERNAME")
+ADMIN_KEY = os.environ.get("ADMIN_KEY")
 
 
 class SubscriptionRequest(BaseModel):
@@ -94,7 +94,7 @@ class SubscriptionRoute(APIRouter):
         self.add_api_route("/user-plans/{user_id}", self.get_user_subscription, methods=["GET"])
         self.add_api_route("/admin/verify", self.verify_subscription, methods=["POST"])
         self.add_api_route("/webhook", self.webhook, methods=["POST"])
-        
+
         self.request_cache = RequestCache(10000, -1) 
         self.order_code_cache = OrderCodeCache(10000, -1)
         self.userdb = MongoDB(MONGODB_URL.format(username=urllib.parse.quote_plus(MONGODB_USERNAME), password=urllib.parse.quote_plus(MONGODB_USERPASSWORD)))
@@ -139,8 +139,12 @@ class SubscriptionRoute(APIRouter):
                 qr_code=existing_request.get("qr_code"),
                 message="User already has a pending request"
             )
+        
+        items = self.payment.choose_items(request.plan_id)
+        if not items:
+            raise HTTPException(status_code=400, detail="Invalid plan ID")
 
-        payment_data = self.payment.create(request.user_id, plan.get("price"))
+        payment_data = self.payment.create(items)
 
         request_data = {
             "plan_id": request.plan_id,

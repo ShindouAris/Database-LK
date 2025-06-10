@@ -1,8 +1,9 @@
-from payos import PaymentData, PayOS
+from payos import PaymentData, PayOS, ItemData
 from os import environ
 from fastapi import HTTPException
 from json import loads
 from datetime import datetime, timezone
+from logging import getLogger
 
 PAYOS_CLIENT_ID = str(environ.get("PAYOS_CLIENT_ID"))
 PAYOS_API_KEY = str(environ.get("PAYOS_API_KEY"))
@@ -13,10 +14,37 @@ class Payment(PayOS):
     def __init__(self) -> None:
         super().__init__(PAYOS_CLIENT_ID, PAYOS_API_KEY, PAYOS_CHECKSUM_KEY)
         self.confirmWebhook = PAYOS_CONFIRM_WEBHOOK
+        self.logger = getLogger(__name__)
 
-    def create(self, user_id: str, amount: int) -> dict:
+    def limit_characters(self, text: str, limit: int) -> str:
+        return text[:limit]
+    
+    def choose_items(self, plan_id: str) -> str:
+        match plan_id:
+            case "premium_lite":
+                return ItemData(
+                    name="Premium Lite",
+                    price=10000,
+                    quantity=1,
+                )
+            case "premium":
+                return ItemData(
+                    name="Premium",
+                    price=17000,
+                    quantity=1,
+                )
+            case "pro_plus":
+                return ItemData(
+                    name="Pro Plus",
+                    price=30000,
+                    quantity=1,
+                )
+            case _:
+                return None
+    
+    def create(self, items: list[ItemData]) -> dict:
         try:
-            payment_data = PaymentData(orderCode=int(datetime.now(timezone.utc).timestamp()), amount=amount, description=user_id, cancelUrl="/", returnUrl="/")
+            payment_data = PaymentData(orderCode=int(datetime.now(timezone.utc).timestamp()), items=items, description="Mua gói trên web", cancelUrl="/", returnUrl="/")
             payosCreatePayment = self.createPaymentLink(payment_data)
 
             return {
@@ -24,6 +52,7 @@ class Payment(PayOS):
                 "order_code": payosCreatePayment.orderCode
             }
         except Exception as e:
+            self.logger.error(f"Error creating payment: {e}")
             raise HTTPException(status_code=500, detail=str(e))
 
     def cancel(self, order_code: str):
@@ -31,6 +60,7 @@ class Payment(PayOS):
             payosCancelPayment = self.cancelPaymentLink(order_code)
             return payosCancelPayment.status
         except Exception as e:
+            self.logger.error(f"Error canceling payment: {e}")
             raise HTTPException(status_code=500, detail=str(e))
         
     def verify_webhook(self, webhook_data):

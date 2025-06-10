@@ -17,6 +17,8 @@ class LocketUploaderDB(FastAPI):
         self.add_middleware(
             CORSMiddleware,
             allow_origins=["*"],
+            allow_methods=["*"],
+            allow_headers=["*"],
             allow_credentials=True,
         )
         self.uptime = datetime.datetime.now(datetime.timezone.utc).timestamp()

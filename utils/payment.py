@@ -50,7 +50,8 @@ class Payment(PayOS):
             }
         except Exception as e:
             self.logger.error(f"Error creating payment: {e}")
-            raise HTTPException(status_code=500, detail=str(e))
+            return {}
+            # raise HTTPException(status_code=500, detail=str(e))
 
     def cancel(self, order_code: str):
         try:
@@ -59,14 +60,14 @@ class Payment(PayOS):
             return payosCancelPayment.status
         except Exception as e:
             self.logger.error(f"Error canceling payment: {e}")
-            raise HTTPException(status_code=500, detail=str(e))
+            # raise HTTPException(status_code=500, detail=str(e))
         
     def verify_webhook(self, webhook_data):
         try:
             payosVerifyPayment = self.verifyPaymentWebhookData(webhook_data)
             return payosVerifyPayment.desc
         except Exception as e:
-            raise HTTPException(status_code=500, detail=str(e))
+            self.logger.error(f"Error verifying webhook: {e}")
         
     def check_payment_status(self, webhook_raw_body):
         self.logger.info(f"Checking payment status for order code: {webhook_raw_body.get('orderCode')}")

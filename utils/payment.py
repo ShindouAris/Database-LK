@@ -39,7 +39,7 @@ class Payment(PayOS):
             case _:
                 return None
     
-    def create(self, items: ItemData, amount: int) -> dict:
+    def create(self, items: ItemData, amount: int) -> dict | None:
         try:
             payment_data = PaymentData(orderCode=int(datetime.now(timezone.utc).timestamp()), items=[items], description="Mua gói trên web", cancelUrl="/", returnUrl="/", amount=amount)
             payosCreatePayment = self.createPaymentLink(payment_data)
@@ -50,7 +50,7 @@ class Payment(PayOS):
             }
         except Exception as e:
             self.logger.error(f"Error creating payment: {e}")
-            return {}
+            return None
             # raise HTTPException(status_code=500, detail=str(e))
 
     def cancel(self, order_code: str):

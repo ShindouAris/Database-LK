@@ -10,8 +10,9 @@ from pydantic import BaseModel
 from Database.plans import get_plan_by_id
 import urllib.parse
 from utils.payment import Payment
-from utils.verify import is_valid_signature
 import asyncio
+from dotenv import load_dotenv
+load_dotenv()
 
 ACCOUNT_NUMBER = os.environ.get("ACCOUNT_NUMBER")
 ACCOUNT_NAME = os.environ.get("ACCOUNT_NAME")
@@ -38,6 +39,7 @@ class RegisterResponse(BaseModel):
     success: bool
     qr_code: str
     message: str
+    order_id: str | None = None
 
 class SubscriptionVerify(BaseModel):
     success: bool
@@ -104,6 +106,8 @@ class SubscriptionRoute(APIRouter):
         self.add_api_route("/user-plans/{user_id}", self.get_user_subscription, methods=["GET"])
         self.add_api_route("/admin/verify", self.verify_subscription, methods=["POST"])
         self.add_api_route("/webhook", self.webhook, methods=["POST"])
+        self.add_api_route("/check-payment-status/{order_id}", self.check_payment_status, methods=["GET"])
+        self.add_api_route("/payment/cancel/{order_id}", self.cancel_payment, methods=["GET"])
 
         self.request_cache = RequestCache(10000, -1) 
         self.order_code_cache = OrderCodeCache(10000, -1)
@@ -120,7 +124,9 @@ class SubscriptionRoute(APIRouter):
                 if order_data:
                     if order_data.get("created_at") + 300 < datetime.now(timezone.utc).timestamp():
                         self.payment.logger.info(f"Auto-canceling order: {order_code} due to timeout")
-                        self.payment.cancel(order_code)
+                        if order_data.get("is_finished"):
+                            self.payment.logger.info(f"Order {order_code} already finished, skipping cancellation")
+                            self.payment.cancel(order_code)
                         await self.order_code_cache.delete_order_code(order_code)
 
     async def lifespan(self):
@@ -164,7 +170,8 @@ class SubscriptionRoute(APIRouter):
                 return RegisterResponse(
                     success=False,
                     qr_code=existing_request.get("qr_code"),
-                    message="User already has a pending request"
+                    message="User already has a pending request",
+                    order_id=existing_request.get("order_code")
                 )
             else:
                 await self.request_cache.delete_request(request.user_id)
@@ -178,6 +185,9 @@ class SubscriptionRoute(APIRouter):
 
         payment_data = self.payment.create(items, plan.get("price"))
 
+        if not payment_data:
+            raise HTTPException(status_code=500, detail="Error creating payment link")
+
         request_data = {
             "plan_id": request.plan_id,
             "timestamp": datetime.now(timezone.utc).isoformat(),
@@ -188,6 +198,7 @@ class SubscriptionRoute(APIRouter):
             "user_id": request.user_id,
             "plan_id": request.plan_id,
             "created_at": datetime.now(timezone.utc).timestamp(),
+            "is_finished": False
         }
 
         await self.request_cache.add_request(request.user_id, request_data)
@@ -201,6 +212,7 @@ class SubscriptionRoute(APIRouter):
 
         return RegisterResponse(
             success=True,
+            order_id=payment_data.get("order_code"),
             qr_code=payment_data.get("qr_code"),
             message="Subscription request sent successfully"
         )
@@ -240,23 +252,69 @@ class SubscriptionRoute(APIRouter):
             message=f"Subscription verified successfully for {request.user_id} with plan {request.plan_id}",
         )
 
+    async def check_payment_status(self, order_id: str | int) -> dict:
+        """Check the payment status from the webhook data."""
+        order_data = await self.order_code_cache.get_order_code(order_id)
+        if order_data is None:
+            logger.error(f"Order code {order_id} not found in cache")
+            return {
+                "success": False,
+                "message": "Order not found"
+            }
+        if order_data.get("is_finished"):
+            logger.info(f"Order {order_id} is already finished")
+            return {
+                "success": True,
+                "message": "Order Finished"
+            }
+        return {
+            "success": False,
+            "message": "Order not finished yet"
+        }
+
+    async def cancel_payment(self, order_id: str):
+        """Cancel a payment request."""
+        order_data = await self.order_code_cache.get_order_code(order_id)
+        if order_data is None:
+            logger.error(f"Order code {order_id} not found in cache")
+            raise HTTPException(status_code=404, detail="Order not found")
+
+        if order_data.get("is_finished"):
+            logger.info(f"Order {order_id} is already finished, cannot cancel")
+            raise HTTPException(status_code=400, detail="Order already finished")
+
+        self.payment.cancel(order_id)
+        await self.order_code_cache.delete_order_code(order_id)
+        await self.request_cache.delete_request(order_data.get("user_id"))
+
+        return {"success": True, "message": "Payment cancelled successfully"}
+
     async def webhook(self, request: Request):
         data = await request.json()
+        payload = data.get("data", {})
+        order_code = payload.get("orderCode")
+
         if self.payment.check_payment_status(data):
-            order_data = await self.order_code_cache.get_order_code(data.get("data", {}).get("orderCode"))
+            order_data = await self.order_code_cache.get_order_code(order_code)
             if not order_data:
-                logger.error(f"Order code {data.get('orderCode')} not found in cache")
+                logger.error(f"Order code {order_code} not found in cache")
                 return {"success": False, "message": "Order not found"}
-            logger.info(f"Payment successful for order: {data.get('orderCode')} - Plan: {order_data.get('plan_id')} - UserID: {order_data.get('user_id')}")
+
+            logger.info(f"Payment successful for order: {order_code} - Plan: {order_data.get('plan_id')} - UserID: {order_data.get('user_id')}")
             await self.userdb.create_subscription(order_data.get("user_id"), order_data.get("plan_id"))
-            await self.order_code_cache.delete_order_code(data.get("orderCode"))
+            await self.order_code_cache.put_order_code(order_code, {
+                "user_id": order_data.get("user_id"),
+                "plan_id": order_data.get("plan_id"),
+                "created_at": order_data.get("created_at"),
+                "is_finished": True
+            })
             return {"success": True}
         else:
-            logger.info(f"Payment failed for order: {data.get('orderCode')}")
-            order_data = await self.order_code_cache.get_order_code(data.get("orderCode"))
+            logger.info(f"Payment failed for order: {order_code}")
+            order_data = await self.order_code_cache.get_order_code(order_code)
             if order_data:
-                await self.order_code_cache.delete_order_code(data.get("orderCode"))
+                await self.order_code_cache.delete_order_code(order_code)
+            else:
+                logger.warning(f"Order code {order_code} not found when trying to delete after failed payment")
             return {"success": False, "message": "Payment failed or cancelled"}
 
-
-        

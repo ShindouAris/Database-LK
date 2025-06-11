@@ -70,7 +70,8 @@ class Payment(PayOS):
             self.logger.error(f"Error verifying webhook: {e}")
         
     def check_payment_status(self, webhook_raw_body):
-        self.logger.info(f"Checking payment status for order code: {webhook_raw_body.get('orderCode')}")
+        self.logger.info(f"Checking payment status....")
+        self.logger.info(f"Webhook raw body: {webhook_raw_body}")
         return webhook_raw_body.get("success") == True
     
     

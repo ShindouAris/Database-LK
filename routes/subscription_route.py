@@ -272,7 +272,7 @@ class SubscriptionRoute(APIRouter):
             "message": "Order not finished yet"
         }
 
-    async def cancel_payment(self, order_i):
+    async def cancel_payment(self, order_id):
         """Cancel a payment request."""
         order_data = await self.order_code_cache.get_order_code(order_id)
         if order_data is None:

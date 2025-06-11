@@ -243,8 +243,9 @@ class SubscriptionRoute(APIRouter):
     async def webhook(self, request: Request):
         data = await request.json()
         if self.payment.check_payment_status(data):
-            order_data = await self.order_code_cache.get_order_code(data.get("orderCode"))
+            order_data = await self.order_code_cache.get_order_code(data.get("data", {}).get("orderCode"))
             if not order_data:
+                logger.error(f"Order code {data.get('orderCode')} not found in cache")
                 return {"success": False, "message": "Order not found"}
             logger.info(f"Payment successful for order: {data.get('orderCode')} - Plan: {order_data.get('plan_id')} - UserID: {order_data.get('user_id')}")
             await self.userdb.create_subscription(order_data.get("user_id"), order_data.get("plan_id"))

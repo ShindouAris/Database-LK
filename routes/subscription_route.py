@@ -112,10 +112,13 @@ class SubscriptionRoute(APIRouter):
     async def auto_cancel_transaction(self):
         while True:
             await asyncio.sleep(60)
-            for order_code in await self.order_code_cache.get_all_order_codes():
+            async with self.order_code_cache.lock:
+                order_codes = list(self.order_code_cache.cache.keys())
+            for order_code in order_codes:
                 order_data = await self.order_code_cache.get_order_code(order_code)
                 if order_data:
                     if order_data.get("created_at") + 300 < datetime.now(timezone.utc).timestamp():
+                        self.payment.logger.info(f"Auto-canceling order: {order_code} due to timeout")
                         self.payment.cancel(order_code)
                         await self.order_code_cache.delete_order_code(order_code)
 

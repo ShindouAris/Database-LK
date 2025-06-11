@@ -147,7 +147,7 @@ class SubscriptionRoute(APIRouter):
             if is_active:
                 raise HTTPException(status_code=400, detail="User already has an active subscription")
             
-   
+
         user = await self.userdb.get_user(request.user_id)
         if not user: 
             await self.userdb.create_user(request.user_id)
@@ -254,6 +254,8 @@ class SubscriptionRoute(APIRouter):
 
     async def webhook(self, request: Request):
         data = await request.json()
+        logger.info(f"Webhook received: {data}")
+        logger.info(f"Webhook raw body: {await request.body()}")
 
         # Gotta disable this
         # if not is_valid_signature(data, data.get("signature")):

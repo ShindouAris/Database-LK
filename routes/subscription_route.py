@@ -27,10 +27,10 @@ class SubscriptionRequest(BaseModel):
 
 class SubscriptionResponse(BaseModel):
     plan_id: str
-    start_date: int | None
-    end_date: int | None
+    start_date: int | None = None
+    end_date: int | None = None
     is_active: bool = False
-    qr_code: str | None
+    qr_code: str | None = None
     
 
 class RegisterResponse(BaseModel):
@@ -234,6 +234,7 @@ class SubscriptionRoute(APIRouter):
             start_date=0,
             end_date=None,
             is_active=False,
+            qr_code=None,
         )
 
     async def verify_subscription(self, request: SubscriptionVerifyRequest) -> SubscriptionVerify:

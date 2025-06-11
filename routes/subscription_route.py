@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, Request
-from utils.tknh import gen_qr
+import logging
 import os
 from utils.webhook import send, build_transaction_embed
 from utils.LRU_CACHE import LRUCache
@@ -20,6 +20,7 @@ MONGODB_USERPASSWORD = os.environ.get("MONGODB_USERPASSWORD")
 MONGODB_USERNAME = os.environ.get("MONGODB_USERNAME")
 ADMIN_KEY = os.environ.get("ADMIN_KEY")
 
+logger = logging.getLogger(__name__)
 
 class SubscriptionRequest(BaseModel):
     user_id: str
@@ -209,14 +210,13 @@ class SubscriptionRoute(APIRouter):
         subscription = await self.userdb.get_subscription(user_id)
         if subscription:
             is_active = await self.check_subscription_expiry(subscription)
-            
+
             return SubscriptionResponse(
                 plan_id=subscription.get("plan_id"),
                 start_date=subscription.get("start_date"),
                 end_date=subscription.get("end_date"),
                 is_active=is_active,
                 qr_code=None,
-                message="Subscription found"
             )
 
         pending_request = await self.request_cache.get_request(user_id)
@@ -225,11 +225,10 @@ class SubscriptionRoute(APIRouter):
             if plan:
                 return SubscriptionResponse(
                     plan_id=pending_request['plan_id'],
-                    start_date=datetime.fromisoformat(pending_request['timestamp']),
+                    start_date=int(datetime.fromisoformat(pending_request['timestamp']).timestamp()),  # Convert datetime to timestamp
                     end_date=None,
                     is_active=False,
                     qr_code=pending_request.get('qr_code'),
-                    message="Pending request found"
                 )
 
         return SubscriptionResponse(
@@ -252,19 +251,28 @@ class SubscriptionRoute(APIRouter):
             success=True,
             message=f"Subscription verified successfully for {request.user_id} with plan {request.plan_id}",
         )
- 
+
     async def webhook(self, request: Request):
         data = await request.json()
+
         if not is_valid_signature(data, data.get("signature")):
+            logger.error("Invalid signature in webhook data")
             return {"success": False, "message": "Invalid signature"}
                 
         if self.payment.check_payment_status(data):
             order_data = await self.order_code_cache.get_order_code(data.get("orderCode"))
             if not order_data:
                 return {"success": False, "message": "Order not found"}
+            logger.info(f"Payment successful for order: {data.get('orderCode')} - Plan: {order_data.get('plan_id')} - UserID: {order_data.get('user_id')}")
             await self.userdb.create_subscription(order_data.get("user_id"), order_data.get("plan_id"))
             await self.order_code_cache.delete_order_code(data.get("orderCode"))
             return {"success": True}
+        else:
+            logger.info(f"Payment failed for order: {data.get('orderCode')}")
+            order_data = await self.order_code_cache.get_order_code(data.get("orderCode"))
+            if order_data:
+                await self.order_code_cache.delete_order_code(data.get("orderCode"))
+            return {"success": False, "message": "Payment failed or cancelled"}
 
 
         

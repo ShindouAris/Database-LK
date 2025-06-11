@@ -145,8 +145,8 @@ class SubscriptionRoute(APIRouter):
             
    
         user = await self.userdb.get_user(request.user_id)
-        if not user:
-                await self.userdb.create_user(request.user_id)
+        if not user: 
+            await self.userdb.create_user(request.user_id)
         
 
         plan = get_plan_by_id(request.plan_id)
@@ -229,7 +229,12 @@ class SubscriptionRoute(APIRouter):
                     message="Pending request found"
                 )
 
-        raise HTTPException(status_code=404, detail="No subscription or pending request found")
+        return SubscriptionResponse(
+            plan_id="free",
+            start_date=0,
+            end_date=None,
+            is_active=False,
+        )
 
     async def verify_subscription(self, request: SubscriptionVerifyRequest) -> SubscriptionVerify:
         """Verify a subscription request."""

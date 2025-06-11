@@ -6,19 +6,19 @@ from routes.global_db import LocketProRouter
 from routes.subscription_route import SubscriptionRoute
 import datetime
 from dotenv import load_dotenv
+import os
 
 load_dotenv()
-
+ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "").split(",")
 logger = getLogger(__name__)
 
 class LocketUploaderDB(FastAPI):
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+        super().__init__(docs_url=None, redoc_url=None, openapi_url=None, swagger_ui_oauth2_redirect_url=None, *args, **kwargs)
         self.add_middleware(
             CORSMiddleware,
-            allow_origins=["*"],
-            allow_methods=["*"],
-            allow_headers=["*"],
+            allow_origins=ALLOWED_ORIGINS,
+            allow_methods=["GET", "POST", "HEAD", "OPTIONS"],
             allow_credentials=True,
         )
         self.uptime = datetime.datetime.now(datetime.timezone.utc).timestamp()

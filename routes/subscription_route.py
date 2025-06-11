@@ -39,7 +39,7 @@ class RegisterResponse(BaseModel):
     success: bool
     qr_code: str
     message: str
-    order_id: str | None = None
+    order_id: int | None = None
 
 class SubscriptionVerify(BaseModel):
     success: bool
@@ -252,7 +252,7 @@ class SubscriptionRoute(APIRouter):
             message=f"Subscription verified successfully for {request.user_id} with plan {request.plan_id}",
         )
 
-    async def check_payment_status(self, order_id: str | int) -> dict:
+    async def check_payment_status(self, order_id) -> dict:
         """Check the payment status from the webhook data."""
         order_data = await self.order_code_cache.get_order_code(order_id)
         if order_data is None:
@@ -272,7 +272,7 @@ class SubscriptionRoute(APIRouter):
             "message": "Order not finished yet"
         }
 
-    async def cancel_payment(self, order_id: str):
+    async def cancel_payment(self, order_i):
         """Cancel a payment request."""
         order_data = await self.order_code_cache.get_order_code(order_id)
         if order_data is None:

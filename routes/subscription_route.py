@@ -107,7 +107,7 @@ class SubscriptionRoute(APIRouter):
         self.add_api_route("/admin/verify", self.verify_subscription, methods=["POST"])
         self.add_api_route("/webhook", self.webhook, methods=["POST"])
         self.add_api_route("/check-payment-status/{order_id}", self.check_payment_status, methods=["GET"])
-        self.add_api_route("/payment/cancel/{order_id}", self.cancel_payment, methods=["GET"])
+        self.add_api_route("/payment/cancel/{order_id}", self.cancel_payment, methods=["POST"])
 
         self.request_cache = RequestCache(10000, -1) 
         self.order_code_cache = OrderCodeCache(10000, -1)

@@ -5,3 +5,4 @@ python-dotenv
 disnake
 motor>=3.3.2
 payos
+colorama

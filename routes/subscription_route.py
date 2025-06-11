@@ -27,9 +27,9 @@ class SubscriptionRequest(BaseModel):
 
 class SubscriptionResponse(BaseModel):
     plan_id: str
-    start_date: datetime
-    end_date: int
-    is_active: bool
+    start_date: int | None
+    end_date: int | None
+    is_active: bool = False
     qr_code: str | None
     
 

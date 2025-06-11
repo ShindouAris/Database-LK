@@ -15,11 +15,8 @@ class Payment(PayOS):
         super().__init__(PAYOS_CLIENT_ID, PAYOS_API_KEY, PAYOS_CHECKSUM_KEY)
         self.confirmWebhook = PAYOS_CONFIRM_WEBHOOK
         self.logger = getLogger(__name__)
-
-    def limit_characters(self, text: str, limit: int) -> str:
-        return text[:limit]
     
-    def choose_items(self, plan_id: str) -> str:
+    def choose_items(self, plan_id: str) -> ItemData | None:
         match plan_id:
             case "premium_lite":
                 return ItemData(
@@ -42,7 +39,7 @@ class Payment(PayOS):
             case _:
                 return None
     
-    def create(self, items: list[ItemData], amount: int) -> dict:
+    def create(self, items: ItemData, amount: int) -> dict:
         try:
             payment_data = PaymentData(orderCode=int(datetime.now(timezone.utc).timestamp()), items=[items], description="Mua gói trên web", cancelUrl="/", returnUrl="/", amount=amount)
             payosCreatePayment = self.createPaymentLink(payment_data)
@@ -72,6 +69,7 @@ class Payment(PayOS):
             raise HTTPException(status_code=500, detail=str(e))
         
     def check_payment_status(self, webhook_raw_body):
+        self.logger.info(f"Checking payment status for order code: {webhook_raw_body.get('orderCode')}")
         return webhook_raw_body.get("success") == True
     
     

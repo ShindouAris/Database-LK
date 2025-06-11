@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 import os
 
 load_dotenv()
-ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "").split(",")
+ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", ["*"])
 logger = getLogger(__name__)
 
 class LocketUploaderDB(FastAPI):

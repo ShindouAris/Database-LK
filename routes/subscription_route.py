@@ -219,18 +219,6 @@ class SubscriptionRoute(APIRouter):
                 qr_code=None,
             )
 
-        pending_request = await self.request_cache.get_request(user_id)
-        if pending_request:
-            plan = get_plan_by_id(pending_request['plan_id'])
-            if plan:
-                return SubscriptionResponse(
-                    plan_id=pending_request['plan_id'],
-                    start_date=int(datetime.fromisoformat(pending_request['timestamp']).timestamp()),  # Convert datetime to timestamp
-                    end_date=None,
-                    is_active=False,
-                    qr_code=pending_request.get('qr_code'),
-                )
-
         return SubscriptionResponse(
             plan_id="free",
             start_date=0,
@@ -254,14 +242,6 @@ class SubscriptionRoute(APIRouter):
 
     async def webhook(self, request: Request):
         data = await request.json()
-        logger.info(f"Webhook received: {data}")
-        logger.info(f"Webhook raw body: {await request.body()}")
-
-        # Gotta disable this
-        # if not is_valid_signature(data, data.get("signature")):
-        #     logger.error("Invalid signature in webhook data")
-        #     return {"success": False, "message": "Invalid signature"}
-                
         if self.payment.check_payment_status(data):
             order_data = await self.order_code_cache.get_order_code(data.get("orderCode"))
             if not order_data:

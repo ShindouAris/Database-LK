@@ -72,7 +72,10 @@ class Payment(PayOS):
     def check_payment_status(self, webhook_raw_body):
         self.logger.info(f"Checking payment status....")
         self.logger.info(f"Webhook raw body: {webhook_raw_body}")
-        return webhook_raw_body.get("success") == True
+        self.logger.info(f"Webhook send type: {type(webhook_raw_body)}")
+        data = self.verify_webhook(webhook_raw_body)
+        print(data)
+        return data == "success"
     
     
 

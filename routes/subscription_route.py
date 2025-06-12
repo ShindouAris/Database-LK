@@ -290,15 +290,19 @@ class SubscriptionRoute(APIRouter):
 
     async def register_trial(self, request: TrailActivationRequest) -> TrailActivationResponse:
         """Register a trial subscription for the user."""
+        if not request.user_id:
+            raise HTTPException(status_code=400, detail="User ID is required")
+
         if not self.is_valid_uid(request.user_id):
             raise HTTPException(status_code=400, detail="Invalid user ID format")
 
         if not await self.check_trial_ability(request.user_id):
             raise HTTPException(status_code=400, detail="User is not eligible for a trial subscription")
-
+        logger.info(f"Activating trial subscription for user {request.user_id}")
         plan = get_plan_by_id("pro_plus")
         if not plan:
             raise HTTPException(status_code=400, detail="Invalid plan ID")
+
         try:
             await self.userdb.create_subscription(request.user_id, plan["id"], is_trial_register=True)
         except Exception as e:
@@ -307,7 +311,7 @@ class SubscriptionRoute(APIRouter):
                 success=False,
                 message="Error creating trial subscription"
             )
-
+        logger.info(f"Successfully activated trial subscription for user {request.user_id}")
         return TrailActivationResponse(
             success=True,
             message="Trial subscription activated successfully"

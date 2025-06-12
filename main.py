@@ -30,7 +30,7 @@ class LocketUploaderDB(FastAPI):
         return {
             "status": "ok",
             "uptime": self.uptime,
-            "version": "1.0.0"
+            "version": "kanade-v3"
         }
 
 

@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, Request
 import logging
 import os
-from utils.webhook import send, build_transaction_embed
+from utils.webhook import send, build_transaction_embed, build_success_transaction_embed, build_fail_transaction_embed
 from utils.LRU_CACHE import LRUCache
 from asyncio import Lock
 from Database.mongodb import MongoDB
@@ -88,6 +88,7 @@ class OrderCodeCache(LRUCache):
     
     async def put_order_code(self, orderID: str, data: dict):
         async with self.lock:
+            logger.info(f"Putting order code {orderID} into cache with data: {data}")
             self.put(orderID, data)
 
     async def delete_order_code(self, orderID: str):
@@ -97,6 +98,21 @@ class OrderCodeCache(LRUCache):
     async def get_all_order_codes(self):
         async with self.lock:
             return self.cache.keys()
+
+class UserSubscriptionCache(LRUCache):
+    def __init__(self, capacity: int, expire_seconds: int):
+        super().__init__(capacity, expire_seconds)
+
+    def get_user_subscription(self, user_id: str):
+        """Get user subscription from cache."""
+        try:
+            return self.get(user_id)
+        except KeyError:
+            return None
+
+    def put_user_subscription(self, user_id: str, subscription_data: dict):
+        """Put user subscription into cache."""
+        self.put(user_id, subscription_data)
 
 class SubscriptionRoute(APIRouter):
     def __init__(self, *args, **kwargs):
@@ -111,6 +127,8 @@ class SubscriptionRoute(APIRouter):
 
         self.request_cache = RequestCache(10000, -1) 
         self.order_code_cache = OrderCodeCache(10000, -1)
+        self.user_subs_cache = UserSubscriptionCache(10000, 3600)
+
         self.userdb = MongoDB(MONGODB_URL.format(username=urllib.parse.quote_plus(MONGODB_USERNAME), password=urllib.parse.quote_plus(MONGODB_USERPASSWORD)))
         self.payment = Payment()
 
@@ -152,12 +170,6 @@ class SubscriptionRoute(APIRouter):
             is_active = await self.check_subscription_expiry(current_sub)
             if is_active:
                 raise HTTPException(status_code=400, detail="User already has an active subscription")
-            
-
-        user = await self.userdb.get_user(request.user_id)
-        if not user: 
-            await self.userdb.create_user(request.user_id)
-        
 
         plan = get_plan_by_id(request.plan_id)
         if not plan:
@@ -187,6 +199,8 @@ class SubscriptionRoute(APIRouter):
 
         if not payment_data:
             raise HTTPException(status_code=500, detail="Error creating payment link")
+
+        logger.info(f"Successfully created payment link for user {request.user_id} with plan {request.plan_id}")
 
         request_data = {
             "plan_id": request.plan_id,
@@ -219,25 +233,41 @@ class SubscriptionRoute(APIRouter):
 
     async def get_user_subscription(self, user_id: str) -> SubscriptionResponse:
         """Get user's current subscription or pending request."""
-        subscription = await self.userdb.get_subscription(user_id)
-        if subscription:
-            is_active = await self.check_subscription_expiry(subscription)
 
-            return SubscriptionResponse(
-                plan_id=subscription.get("plan_id"),
-                start_date=subscription.get("start_date"),
-                end_date=subscription.get("end_date"),
-                is_active=is_active,
-                qr_code=None,
-            )
+        # Check in-memory cache first
+        subscription = self.user_subs_cache.get_user_subscription(user_id)
+        if not subscription:
+            # Fallback to database
+            subscription = await self.userdb.get_subscription(user_id)
+            self.user_subs_cache.put_user_subscription(user_id, subscription)
+
+        if not subscription:
+            return self._free_subscription()
+
+        is_active = await self.check_subscription_expiry(subscription)
+        if not is_active:
+            return self._free_subscription()
 
         return SubscriptionResponse(
+            plan_id=subscription.get("plan_id", "free"),
+            start_date=subscription.get("start_date"),
+            end_date=subscription.get("end_date"),
+            is_active=True,
+            qr_code=None,
+        )
+
+    def _free_subscription(self) -> SubscriptionResponse:
+        """Helper method to return the default free subscription."""
+        return SubscriptionResponse(
             plan_id="free",
-            start_date=0,
+            start_date=None,
             end_date=None,
             is_active=False,
             qr_code=None,
         )
+
+
+
 
     async def verify_subscription(self, request: SubscriptionVerifyRequest) -> SubscriptionVerify:
         """Verify a subscription request."""
@@ -254,8 +284,8 @@ class SubscriptionRoute(APIRouter):
 
     async def check_payment_status(self, order_id) -> dict:
         """Check the payment status from the webhook data."""
-        order_data = await self.order_code_cache.get_order_code(order_id)
-        if order_data is None:
+        order_data = await self.order_code_cache.get_order_code(str(order_id))
+        if not order_data:
             logger.error(f"Order code {order_id} not found in cache")
             return {
                 "success": False,
@@ -300,6 +330,16 @@ class SubscriptionRoute(APIRouter):
                 logger.error(f"Order code {order_code} not found in cache")
                 return {"success": False, "message": "Order not found"}
 
+            user = await self.userdb.get_user(order_data.get("user_id"))
+            if not user and order_data.get("user_id") is not None:
+                await self.userdb.create_user(order_data.get("user_id"))
+
+            embed = await build_success_transaction_embed(
+                user_id=order_data.get("user_id"),
+                plan_id=order_data.get("plan_id")
+            )
+
+
             logger.info(f"Payment successful for order: {order_code} - Plan: {order_data.get('plan_id')} - UserID: {order_data.get('user_id')}")
             await self.userdb.create_subscription(order_data.get("user_id"), order_data.get("plan_id"))
             await self.order_code_cache.put_order_code(order_code, {
@@ -308,11 +348,17 @@ class SubscriptionRoute(APIRouter):
                 "created_at": order_data.get("created_at"),
                 "is_finished": True
             })
+            await send(embed)
             return {"success": True}
         else:
-            logger.info(f"Payment failed for order: {order_code}")
+            logger.info(f"Payment failed for order: {order_code} - Failling to manual verify")
             order_data = await self.order_code_cache.get_order_code(order_code)
             if order_data:
+                embed = await build_fail_transaction_embed(
+                    user_id=order_data.get("user_id"),
+                    plan_id=order_data.get("plan_id")
+                )
+                await send(embed)
                 await self.order_code_cache.delete_order_code(order_code)
             else:
                 logger.warning(f"Order code {order_code} not found when trying to delete after failed payment")

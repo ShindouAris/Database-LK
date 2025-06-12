@@ -44,21 +44,24 @@ class MongoDB:
             "is_active": True
         })
 
-    async def create_subscription(self, user_id: str, plan_id: str) -> dict:
+    async def create_subscription(self, user_id: str, plan_id: str, is_trial_register: bool = False) -> dict:
         plan = await self.get_plan_by_id(plan_id)
+        now = datetime.now(timezone.utc)
         if not plan:
             raise ValueError("Invalid plan ID")
-
-        end_date = int((datetime.now(timezone.utc) + timedelta(days=plan["duration_days"])).timestamp())
+        if not is_trial_register:
+            end_date = int((now + timedelta(days=plan["duration_days"])).timestamp())
+        else:
+            end_date = int((now + timedelta(days=15)).timestamp())
         
         subscription_doc = {
             "user_id": user_id,
             "plan_id": plan_id,
-            "start_date": int(datetime.now(timezone.utc).timestamp()),
+            "start_date": int(now.timestamp()),
             "end_date": end_date,
             "is_active": True,
             "payment_status": "active",
-            "created_at": int(datetime.now(timezone.utc).timestamp())
+            "created_at": int(now.timestamp())
         }
         
         result = await self.subscriptions.insert_one(subscription_doc)
@@ -74,24 +77,23 @@ class MongoDB:
             },
             {
                 "$set": {
+                    "plan_id": "free",
                     "is_active": False,
-                    "cancelled_at": int(now.timestamp()),
+                    "payment_status": "cancelled",
+                    "end_date": int(now.timestamp()),
                     "updated_at": int(now.timestamp())
                 }
             }
         )
         return result.modified_count > 0
 
-    async def get_user_plans(self, user_id: str) -> List[dict]:
-        cursor = self.plans.find({
-            "_id": {
-                "$in": await self.subscriptions.distinct(
-                    "plan_id",
-                    {"user_id": user_id}
-                )
-            }
+    async def check_trial_ability(self, user_id: str) -> bool:
+        result = await self.subscriptions.find_one({
+            "user_id": user_id,
         })
-        return await cursor.to_list(None)
+        if result:
+            return False
+        return True
 
     async def create_plan(self, id: str, name: str, price: int, duration_days: int,
                          max_uploads: int, perks: Dict[str, bool],

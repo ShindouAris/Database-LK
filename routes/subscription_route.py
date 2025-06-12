@@ -4,7 +4,7 @@ import os
 from utils.webhook import send, build_transaction_embed, build_success_transaction_embed, build_fail_transaction_embed
 from utils.LRU_CACHE import LRUCache
 from asyncio import Lock
-from Database.mongodb import MongoDB
+from Database.cached_mongodb import CachedMongoDB
 from datetime import datetime, timezone
 from pydantic import BaseModel
 from Database.plans import get_plan_by_id
@@ -12,6 +12,7 @@ import urllib.parse
 from utils.payment import Payment
 import asyncio
 from dotenv import load_dotenv
+import re
 load_dotenv()
 
 ACCOUNT_NUMBER = os.environ.get("ACCOUNT_NUMBER")
@@ -53,6 +54,13 @@ class SubscriptionVerifyRequest(BaseModel):
 class GetQRCodeRequest(BaseModel):
     user_id: str
     plan_id: str
+
+class TrailActivationResponse(BaseModel):
+    success: bool
+    message: str
+
+class TrailActivationRequest(BaseModel):
+    user_id: str
 
 class RequestCache(LRUCache):
     def __init__(self, capacity: int, expire_seconds: int):
@@ -124,12 +132,14 @@ class SubscriptionRoute(APIRouter):
         self.add_api_route("/webhook", self.webhook, methods=["POST"])
         self.add_api_route("/check-payment-status/{order_id}", self.check_payment_status, methods=["GET"])
         self.add_api_route("/payment/cancel/{order_id}", self.cancel_payment, methods=["POST"])
+        self.add_api_route("/trialoffer/{user_id}", self.check_trial_ability, methods=["GET"])
+        self.add_api_route("/trialoffer/register", self.register_trial, methods=["POST"])
 
         self.request_cache = RequestCache(10000, -1) 
         self.order_code_cache = OrderCodeCache(10000, -1)
         self.user_subs_cache = UserSubscriptionCache(10000, 3600)
 
-        self.userdb = MongoDB(MONGODB_URL.format(username=urllib.parse.quote_plus(MONGODB_USERNAME), password=urllib.parse.quote_plus(MONGODB_USERPASSWORD)))
+        self.userdb = CachedMongoDB(MONGODB_URL.format(username=urllib.parse.quote_plus(MONGODB_USERNAME), password=urllib.parse.quote_plus(MONGODB_USERPASSWORD)))
         self.payment = Payment()
 
     async def auto_cancel_transaction(self):
@@ -256,7 +266,8 @@ class SubscriptionRoute(APIRouter):
             qr_code=None,
         )
 
-    def _free_subscription(self) -> SubscriptionResponse:
+    @staticmethod
+    def _free_subscription() -> SubscriptionResponse:
         """Helper method to return the default free subscription."""
         return SubscriptionResponse(
             plan_id="free",
@@ -266,7 +277,41 @@ class SubscriptionRoute(APIRouter):
             qr_code=None,
         )
 
+    @staticmethod
+    def is_valid_uid(uid):
+        pattern = r'^[a-zA-Z0-9]{28}$'
+        return re.match(pattern, uid) is not None
 
+    async def check_trial_ability(self, user_id: str) -> bool:
+        """Check if the user is eligible for a trial subscription."""
+        if await self.userdb.check_trial_ability(user_id):
+            return True
+        return False
+
+    async def register_trial(self, request: TrailActivationRequest) -> TrailActivationResponse:
+        """Register a trial subscription for the user."""
+        if not self.is_valid_uid(request.user_id):
+            raise HTTPException(status_code=400, detail="Invalid user ID format")
+
+        if not await self.check_trial_ability(request.user_id):
+            raise HTTPException(status_code=400, detail="User is not eligible for a trial subscription")
+
+        plan = get_plan_by_id("pro_plus")
+        if not plan:
+            raise HTTPException(status_code=400, detail="Invalid plan ID")
+        try:
+            await self.userdb.create_subscription(request.user_id, plan["id"], is_trial_register=True)
+        except Exception as e:
+            logger.error(f"Error creating trial subscription for user {request.user_id}: {e}")
+            return TrailActivationResponse(
+                success=False,
+                message="Error creating trial subscription"
+            )
+
+        return TrailActivationResponse(
+            success=True,
+            message="Trial subscription activated successfully"
+        )
 
 
     async def verify_subscription(self, request: SubscriptionVerifyRequest) -> SubscriptionVerify:

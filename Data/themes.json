@@ -60,16 +60,16 @@
         "order_index": 9
     },
     {
-        "id": "22b28b19-750e-4a44-ac71-923d6b60c550",
-        "preset_id": "icon_pastel_3d_blue",
+        "id": "0ad40468-cc72-4497-b786-4f6654b5281a",
+        "preset_id": "streak_icon",
         "type": "image_icon",
-        "icon": "https://res.cloudinary.com/diocloud/image/upload/v1747855391/pastel_3d_blue_dy0k9f.png",
-        "preset_caption": "",
+        "icon": "https://firebasestorage.googleapis.com/v0/b/webdio-20ca8.appspot.com/o/icon%2Fstreak_restore_icon_Normal%403x.png?alt=media&token=70ce776e-f09d-464f-8999-d82a2e7d49f1",
+        "preset_caption": "Streakkkk!",
         "color_top": "",
         "color_bottom": "",
-        "text_color": "#4DA6FF",
-        "created_at": "2025-05-21T19:27:21.326831",
-        "order_index": 3
+        "text_color": "#FFD700",
+        "created_at": "2025-06-12T03:16:50.124891",
+        "order_index": 0
     },
     {
         "id": "60ff3d90-04ea-4ddd-a3dc-07fce2459c94",
@@ -132,18 +132,6 @@
         "order_index": 2
     },
     {
-        "id": "6263ba41-921c-4cd4-969f-1e236df0bc69",
-        "preset_id": "pastel_3d_pink",
-        "type": "image_icon",
-        "icon": "https://res.cloudinary.com/diocloud/image/upload/v1747855391/pastel_3d_pink_r1mr6i.png",
-        "preset_caption": "",
-        "color_top": "",
-        "color_bottom": "",
-        "text_color": "#F8C5D6",
-        "created_at": "2025-05-21T19:31:56.668496",
-        "order_index": 4
-    },
-    {
         "id": "b8279217-2b9a-490f-a9db-54bc6768dfbf",
         "preset_id": "party_time",
         "type": "decorative",
@@ -156,16 +144,16 @@
         "order_index": 1
     },
     {
-        "id": "98df5773-5c97-4007-a384-00b6bac36c86",
-        "preset_id": "gold_on_black_outline",
+        "id": "6263ba41-921c-4cd4-969f-1e236df0bc69",
+        "preset_id": "pastel_3d_pink",
         "type": "image_icon",
-        "icon": "https://res.cloudinary.com/diocloud/image/upload/v1747855391/gold_on_black_outline_oe4ywo.png",
+        "icon": "https://firebasestorage.googleapis.com/v0/b/webdio-20ca8.appspot.com/o/icon%2Fpastel_3d_pink.png?alt=media&token=ad0d4b1b-486e-4855-94c3-47b7a4e62950",
         "preset_caption": "",
         "color_top": "",
         "color_bottom": "",
-        "text_color": "#FFD700",
-        "created_at": "2025-05-21T19:33:41.258001",
-        "order_index": 5
+        "text_color": "#F8C5D6",
+        "created_at": "2025-05-21T19:31:56.668496",
+        "order_index": 4
     },
     {
         "id": "bc556c5d-b191-4121-8007-756bd5a0b438",
@@ -180,30 +168,6 @@
         "order_index": 0
     },
     {
-        "id": "4f4ad10e-b057-4715-89d1-a3f47930d3ec",
-        "preset_id": "gem_bg_pink",
-        "type": "image_icon",
-        "icon": "https://res.cloudinary.com/diocloud/image/upload/v1747856281/gem_bg_pink_djxvzw.png",
-        "preset_caption": "",
-        "color_top": "",
-        "color_bottom": "",
-        "text_color": "#6A0DAD",
-        "created_at": "2025-05-21T19:39:51.913635",
-        "order_index": 6
-    },
-    {
-        "id": "288c1045-c278-49eb-8810-01946bada01b",
-        "preset_id": "happy_birthday",
-        "type": "image_icon",
-        "icon": "https://res.cloudinary.com/diocloud/image/upload/v1747390365/birthday_indicator_Normal_3x_aifrzs.png",
-        "preset_caption": "Happy Birthday!",
-        "color_top": "",
-        "color_bottom": "",
-        "text_color": "",
-        "created_at": "2025-05-23T01:11:00.908314",
-        "order_index": 7
-    },
-    {
         "id": "247fa9fa-5f20-4b47-b427-d2d599c6b50c",
         "preset_id": "dating_times",
         "type": "custome",
@@ -214,18 +178,6 @@
         "text_color": "#FFFFFFE6",
         "created_at": "2025-05-23T15:41:18.030907",
         "order_index": 5
-    },
-    {
-        "id": "29cae1fd-a83b-411f-8b42-d76b4a587bc9",
-        "preset_id": "locket_normal",
-        "type": "image_icon",
-        "icon": "https://res.cloudinary.com/diocloud/image/upload/v1748361824/locket_gold_logo_3x_yy9cuw.png",
-        "preset_caption": "",
-        "color_top": "",
-        "color_bottom": "",
-        "text_color": "",
-        "created_at": "2025-05-27T16:06:36.842631",
-        "order_index": 0
     },
     {
         "id": "371feb69-617f-4255-91af-cf7cc3d60c60",
@@ -324,30 +276,6 @@
         "order_index": 5
     },
     {
-        "id": "f42f1c66-2153-4d12-8e52-740fed13adb8",
-        "preset_id": "light_hearts",
-        "type": "image_icon",
-        "icon": "https://res.cloudinary.com/diocloud/image/upload/v1748363647/light_hearts_yxpqa3.png",
-        "preset_caption": "",
-        "color_top": "",
-        "color_bottom": "",
-        "text_color": "",
-        "created_at": "2025-05-27T16:36:16.953949",
-        "order_index": 0
-    },
-    {
-        "id": "088c7116-48c9-47e6-96fb-a6c78382b9cf",
-        "preset_id": "flowers_magenta",
-        "type": "image_icon",
-        "icon": "https://res.cloudinary.com/diocloud/image/upload/v1748363647/flowers_magenta_eplyqj.png",
-        "preset_caption": "",
-        "color_top": "",
-        "color_bottom": "",
-        "text_color": "",
-        "created_at": "2025-05-27T16:37:15.32668",
-        "order_index": 0
-    },
-    {
         "id": "39a72dc1-bbf8-42f1-b606-a3cb7e88fb00",
         "preset_id": "coffee_time",
         "type": "custome",
@@ -384,22 +312,94 @@
         "order_index": 1
     },
     {
-        "id": "919be5be-e570-450e-9439-e2cebe2397fa",
-        "preset_id": "locket_gold_badge",
+        "id": "22b28b19-750e-4a44-ac71-923d6b60c550",
+        "preset_id": "icon_pastel_3d_blue",
         "type": "image_icon",
-        "icon": "https://res.cloudinary.com/diocloud/image/upload/v1747390369/locket_gold_badge_small_Normal_3x_znsfh3.png",
+        "icon": "https://firebasestorage.googleapis.com/v0/b/webdio-20ca8.appspot.com/o/icon%2Ficon_pastel_3d_blue.png?alt=media&token=edfb2cab-7ea4-44d0-bd94-2f4d0326f597",
+        "preset_caption": "",
+        "color_top": "",
+        "color_bottom": "",
+        "text_color": "#4DA6FF",
+        "created_at": "2025-05-21T19:27:21.326831",
+        "order_index": 3
+    },
+    {
+        "id": "98df5773-5c97-4007-a384-00b6bac36c86",
+        "preset_id": "gold_on_black_outline",
+        "type": "image_icon",
+        "icon": "https://firebasestorage.googleapis.com/v0/b/webdio-20ca8.appspot.com/o/icon%2Fgold_on_black_outline.png?alt=media&token=68651150-2ff6-42c3-9c51-05643ea46bff",
+        "preset_caption": "",
+        "color_top": "",
+        "color_bottom": "",
+        "text_color": "#FFD700",
+        "created_at": "2025-05-21T19:33:41.258001",
+        "order_index": 5
+    },
+    {
+        "id": "4f4ad10e-b057-4715-89d1-a3f47930d3ec",
+        "preset_id": "gem_bg_pink",
+        "type": "image_icon",
+        "icon": "https://firebasestorage.googleapis.com/v0/b/webdio-20ca8.appspot.com/o/icon%2Fgem_bg_pink.png?alt=media&token=5a8e31df-c34e-40de-add7-26423be942c9",
+        "preset_caption": "",
+        "color_top": "",
+        "color_bottom": "",
+        "text_color": "#6A0DAD",
+        "created_at": "2025-05-21T19:39:51.913635",
+        "order_index": 6
+    },
+    {
+        "id": "288c1045-c278-49eb-8810-01946bada01b",
+        "preset_id": "happy_birthday",
+        "type": "image_icon",
+        "icon": "https://firebasestorage.googleapis.com/v0/b/webdio-20ca8.appspot.com/o/icon%2Fbirthday_indicator_Normal%403x.png?alt=media&token=13281ad5-7acb-4b52-84e1-4e48fefb4dfe",
+        "preset_caption": "Happy Birthday!",
+        "color_top": "",
+        "color_bottom": "",
+        "text_color": "",
+        "created_at": "2025-05-23T01:11:00.908314",
+        "order_index": 7
+    },
+    {
+        "id": "088c7116-48c9-47e6-96fb-a6c78382b9cf",
+        "preset_id": "flowers_magenta",
+        "type": "image_icon",
+        "icon": "https://firebasestorage.googleapis.com/v0/b/webdio-20ca8.appspot.com/o/icon%2Fflowers_magenta.png?alt=media&token=4646e508-b66b-47d2-9184-a9a83be3a8f0",
         "preset_caption": "",
         "color_top": "",
         "color_bottom": "",
         "text_color": "",
-        "created_at": "2025-05-16T14:27:16.83878",
+        "created_at": "2025-05-27T16:37:15.32668",
+        "order_index": 0
+    },
+    {
+        "id": "82895ae6-c1e4-4501-8ab3-57756d19aedc",
+        "preset_id": "icon_locket_default",
+        "type": "image_icon",
+        "icon": "https://firebasestorage.googleapis.com/v0/b/webdio-20ca8.appspot.com/o/icon%2Ficon_locket_default.png?alt=media&token=512db064-d69e-4c86-9609-d05145795596",
+        "preset_caption": "",
+        "color_top": "",
+        "color_bottom": "",
+        "text_color": "#F6D669",
+        "created_at": "2025-05-16T14:43:27.596751",
+        "order_index": 2
+    },
+    {
+        "id": "f42f1c66-2153-4d12-8e52-740fed13adb8",
+        "preset_id": "light_hearts",
+        "type": "image_icon",
+        "icon": "https://firebasestorage.googleapis.com/v0/b/webdio-20ca8.appspot.com/o/icon%2Flight_hearts.png?alt=media&token=64c6a4ea-cb27-4e63-acc6-3d254cf27edf",
+        "preset_caption": "",
+        "color_top": "",
+        "color_bottom": "",
+        "text_color": "",
+        "created_at": "2025-05-27T16:36:16.953949",
         "order_index": 0
     },
     {
         "id": "7a4b06d6-6355-4070-a779-3b73fadbf188",
         "preset_id": "celebrity_badge",
         "type": "image_icon",
-        "icon": "https://res.cloudinary.com/diocloud/image/upload/v1747390374/celebrity_badge_small_Normal_3x_vjmfwg.png",
+        "icon": "https://firebasestorage.googleapis.com/v0/b/webdio-20ca8.appspot.com/o/icon%2Fcelebrity_badge_small_Normal%403x.png?alt=media&token=23c0ec66-297c-444c-9f16-a08818ac8d5c",
         "preset_caption": "",
         "color_top": "",
         "color_bottom": "",
@@ -408,15 +408,27 @@
         "order_index": 1
     },
     {
-        "id": "82895ae6-c1e4-4501-8ab3-57756d19aedc",
-        "preset_id": "icon_locket_default",
+        "id": "29cae1fd-a83b-411f-8b42-d76b4a587bc9",
+        "preset_id": "locket_normal",
         "type": "image_icon",
-        "icon": "https://res.cloudinary.com/diocloud/image/upload/v1747406421/icon_locket_default_shiga3.png",
+        "icon": "https://firebasestorage.googleapis.com/v0/b/webdio-20ca8.appspot.com/o/icon%2Flocket_gold_logo%403x.png?alt=media&token=6e3bbd3a-5b5a-46ee-956d-4f380ce7c404",
         "preset_caption": "",
         "color_top": "",
         "color_bottom": "",
-        "text_color": "#F6D669",
-        "created_at": "2025-05-16T14:43:27.596751",
-        "order_index": 2
+        "text_color": "",
+        "created_at": "2025-05-27T16:06:36.842631",
+        "order_index": 0
+    },
+    {
+        "id": "919be5be-e570-450e-9439-e2cebe2397fa",
+        "preset_id": "locket_gold_badge",
+        "type": "image_icon",
+        "icon": "https://firebasestorage.googleapis.com/v0/b/webdio-20ca8.appspot.com/o/icon%2Flocket_gold_badge_small_Normal%403x.png?alt=media&token=dd4f0823-85f5-4c5c-88de-f999dc562af4",
+        "preset_caption": "",
+        "color_top": "",
+        "color_bottom": "",
+        "text_color": "#FFBF00",
+        "created_at": "2025-05-16T14:27:16.83878",
+        "order_index": 0
     }
 ]

@@ -40,6 +40,7 @@ class RegisterResponse(BaseModel):
     success: bool
     qr_code: str
     message: str
+    is_manual: bool = False
     order_id: int | None = None
 
 class SubscriptionVerify(BaseModel):
@@ -390,7 +391,13 @@ class SubscriptionRoute(APIRouter):
 
 
             logger.info(f"Payment successful for order: {order_code} - Plan: {order_data.get('plan_id')} - UserID: {order_data.get('user_id')}")
-            await self.userdb.create_subscription(order_data.get("user_id"), order_data.get("plan_id"))
+            subscription = await self.userdb.get_user_subscription(order_data.get("user_id"))
+            if not subscription:
+                logger.info(f"Creating new subscription for user {order_data.get('user_id')} with plan {order_data.get('plan_id')}")
+                await self.userdb.create_subscription(order_data.get("user_id"), order_data.get("plan_id"))
+            else:
+                logger.info(f"Renewing subscription for user {order_data.get('user_id')} with plan {order_data.get('plan_id')}")
+                await self.userdb.renew_subscription(order_data.get("user_id"), order_data.get("plan_id"))
             await self.order_code_cache.put_order_code(order_code, {
                 "user_id": order_data.get("user_id"),
                 "plan_id": order_data.get("plan_id"),

@@ -14,7 +14,6 @@ async def build_transaction_embed(user_id: str, plan_id: str, amount: int) -> Em
     embed.add_field(name="PlanID", value=plan_id, inline=False)
     embed.add_field(name="Amount", value=amount, inline=False)
     embed.set_footer(text="Locket Kanade")
-    embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/1280000000000000000/1280000000000000000/locketpro.png")
     return embed
 
 async def build_fail_transaction_embed(user_id: str, plan_id: str) -> Embed:

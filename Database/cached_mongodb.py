@@ -58,6 +58,23 @@ class CachedMongoDB:
         self.trial_check_cache.delete(user_id)
         return subscription
 
+    async def get_user_subscription(self, user_id: str) -> Optional[dict]:
+        try:
+            return self.subscription_cache.get(user_id)
+        except KeyError:
+            subscription = await self.db.get_user_subscription(user_id)
+            if subscription:
+                self.subscription_cache.put(user_id, subscription)
+            return subscription
+
+    async def renew_subscription(self, user_id: str, plan_id: str) -> dict:
+        subscription = await self.db.renew_subscription(user_id, plan_id)
+        if subscription:
+            self.subscription_cache.put(f"active_{user_id}", subscription)
+            self.subscription_cache.put(user_id, subscription)
+            self.trial_check_cache.delete(user_id)
+        return subscription
+
     async def cancel_subscription(self, user_id: str) -> bool:
         success = await self.db.cancel_subscription(user_id)
         if success:
@@ -103,7 +120,7 @@ class CachedMongoDB:
         try:
             return self.subscription_cache.get(user_id)
         except KeyError:
-            subscription = await self.db.get_subscription(user_id)
+            subscription = await self.db.get_ploplus_subscription(user_id)
             if subscription:
                 self.subscription_cache.put(user_id, subscription)
             return subscription 

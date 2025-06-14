@@ -68,6 +68,40 @@ class MongoDB:
         subscription_doc["_id"] = result.inserted_id
         return subscription_doc
 
+    async def renew_subscription(self, user_id: str, plan_id: str) -> dict:
+        plan = await self.get_plan_by_id(plan_id)
+        if not plan:
+            raise ValueError("Invalid plan ID")
+
+        now = datetime.now(timezone.utc)
+        end_date = int((now + timedelta(days=plan["duration_days"])).timestamp())
+
+        filter = {
+            "user_id": user_id,
+        }
+        update = {
+            "$set": {
+                "plan_id": plan_id,
+                "end_date": end_date,
+                "is_active": True,
+                "payment_status": "active",
+            }
+        }
+
+        result = await self.subscriptions.find_one_and_update(
+            filter,
+            update,
+            return_document=True
+        )
+
+        if result:
+            return result
+        else:
+            raise ValueError("No active subscription found for this user")
+
+    async def get_user_subscription(self, user_id: str) -> Optional[dict]:
+        return await self.subscriptions.find_one({"user_id": user_id})
+
     async def cancel_subscription(self, user_id: str) -> bool:
         now = datetime.now(timezone.utc)
         result = await self.subscriptions.update_one(
@@ -79,7 +113,7 @@ class MongoDB:
                 "$set": {
                     "plan_id": "free",
                     "is_active": False,
-                    "payment_status": "cancelled",
+                    "payment_status": "ended",
                     "end_date": int(now.timestamp()),
                     "updated_at": int(now.timestamp())
                 }
@@ -119,5 +153,5 @@ class MongoDB:
     async def get_plan_by_id(self, plan_id: str) -> dict:
         return get_plan_by_id(plan_id)
 
-    async def get_subscription(self, user_id: str) -> dict:
-        return await self.subscriptions.find_one({"user_id": user_id}) 
+    async def get_ploplus_subscription(self, user_id: str) -> dict:
+        return await self.subscriptions.find_one({"user_id": user_id, "plan_id": "pro_plus"})

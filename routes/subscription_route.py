@@ -1,4 +1,5 @@
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, HTTPException, Request, Response
+from fastapi.responses import JSONResponse
 import logging
 import os
 from utils.webhook import send, build_transaction_embed, build_success_transaction_embed, build_fail_transaction_embed
@@ -13,6 +14,7 @@ from utils.payment import Payment
 import asyncio
 from dotenv import load_dotenv
 import re
+from routes.models import *
 load_dotenv()
 
 ACCOUNT_NUMBER = os.environ.get("ACCOUNT_NUMBER")
@@ -24,44 +26,6 @@ ADMIN_KEY = os.environ.get("ADMIN_KEY")
 
 logger = logging.getLogger(__name__)
 
-class SubscriptionRequest(BaseModel):
-    user_id: str
-    plan_id: str
-
-class SubscriptionResponse(BaseModel):
-    plan_id: str
-    start_date: int | None = None
-    end_date: int | None = None
-    is_active: bool = False
-    qr_code: str | None = None
-    
-
-class RegisterResponse(BaseModel):
-    success: bool
-    qr_code: str
-    message: str
-    is_manual: bool = False
-    order_id: int | None = None
-
-class SubscriptionVerify(BaseModel):
-    success: bool
-    message: str
-
-class SubscriptionVerifyRequest(BaseModel):
-    admin_key: str
-    user_id: str
-    plan_id: str
-
-class GetQRCodeRequest(BaseModel):
-    user_id: str
-    plan_id: str
-
-class TrailActivationResponse(BaseModel):
-    success: bool
-    message: str
-
-class TrailActivationRequest(BaseModel):
-    user_id: str
 
 class RequestCache(LRUCache):
     def __init__(self, capacity: int, expire_seconds: int):
@@ -135,6 +99,7 @@ class SubscriptionRoute(APIRouter):
         self.add_api_route("/payment/cancel/{order_id}", self.cancel_payment, methods=["POST"])
         self.add_api_route("/trialoffer/{user_id}", self.check_trial_ability, methods=["GET"])
         self.add_api_route("/trialoffer/register", self.register_trial, methods=["POST"])
+        self.add_api_route("/get-all-pending-payments", self.get_all_pending_payment, methods=["GET"])
 
         self.request_cache = RequestCache(10000, -1) 
         self.order_code_cache = OrderCodeCache(10000, -1)
@@ -155,13 +120,13 @@ class SubscriptionRoute(APIRouter):
                         self.payment.logger.info(f"Auto-canceling order: {order_code} due to timeout")
                         if order_data.get("is_finished"):
                             self.payment.logger.info(f"Order {order_code} already finished, skipping cancellation")
+                        else:
                             self.payment.cancel(order_code)
                         await self.order_code_cache.delete_order_code(order_code)
 
     async def lifespan(self):
         await self.userdb.init_db()
         asyncio.create_task(self.auto_cancel_transaction())
-
 
     async def check_subscription_expiry(self, subscription: dict) -> bool:
         """Check if a subscription is expired and update its status if needed."""
@@ -420,3 +385,40 @@ class SubscriptionRoute(APIRouter):
                 logger.warning(f"Order code {order_code} not found when trying to delete after failed payment")
             return {"success": False, "message": "Payment failed or cancelled"}
 
+    async def get_all_pending_payment(self, request: GetAllPaymentsRequest) -> JSONResponse:
+        ADMIN_REQUEST_KEY = request.admin_key
+
+        if not ADMIN_REQUEST_KEY:
+            return JSONResponse(
+                content={"detail": "Admin key is required for this action!"},
+                status_code=401
+            )
+
+        if ADMIN_REQUEST_KEY != ADMIN_KEY: 
+            return JSONResponse(
+                content={"detail": "Invalid admin key, access denied!"},
+                status_code=403
+            )
+
+        pending_payments = []
+        for order_code in await self.order_code_cache.get_all_order_codes():
+            order_data = await self.order_code_cache.get_order_code(order_code)
+            if order_data and not order_data.get("is_finished"):
+                pending_payments.append({
+                    "order_code": order_code,
+                    "user_id": order_data.get("user_id"),
+                    "plan_id": order_data.get("plan_id"),
+                    "created_at": order_data.get("created_at")
+                })
+
+        if not pending_payments:
+            return JSONResponse(
+                content={"detail": "No pending payments found"},
+                status_code=404
+            )
+
+        return JSONResponse(
+            content={"pending_payments": pending_payments},
+            status_code=200
+        )
+    

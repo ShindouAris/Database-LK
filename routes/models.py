@@ -61,3 +61,44 @@ class Notification(BaseModel):
 
 class NotificationResponse(BaseModel):
     notifications: list[Notification]
+
+class SubscriptionRequest(BaseModel):
+    user_id: str
+    plan_id: str
+
+class SubscriptionResponse(BaseModel):
+    plan_id: str
+    start_date: int | None = None
+    end_date: int | None = None
+    is_active: bool = False
+    qr_code: str | None = None
+    
+class RegisterResponse(BaseModel):
+    success: bool
+    qr_code: str
+    message: str
+    is_manual: bool = False
+    order_id: int | None = None
+
+class SubscriptionVerify(BaseModel):
+    success: bool
+    message: str
+
+class SubscriptionVerifyRequest(BaseModel):
+    admin_key: str
+    user_id: str
+    plan_id: str
+
+class GetQRCodeRequest(BaseModel):
+    user_id: str
+    plan_id: str
+
+class TrailActivationResponse(BaseModel):
+    success: bool
+    message: str
+
+class TrailActivationRequest(BaseModel):
+    user_id: str
+
+class GetAllPaymentsRequest(BaseModel):
+    admin_key: str

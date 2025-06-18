@@ -121,7 +121,7 @@ class SubscriptionRoute(APIRouter):
                         if order_data.get("is_finished"):
                             self.payment.logger.info(f"Order {order_code} already finished, skipping cancellation")
                         else:
-                            self.payment.cancel(order_code)
+                            await self.payment.cancel(order_code)
                         await self.order_code_cache.delete_order_code(order_code)
 
     async def lifespan(self):
@@ -163,7 +163,7 @@ class SubscriptionRoute(APIRouter):
                 )
             else:
                 await self.request_cache.delete_request(request.user_id)
-                self.payment.cancel(existing_request.get("order_code"))
+                await self.payment.cancel(existing_request.get("order_code"))
                 await self.order_code_cache.delete_order_code(existing_request.get("order_code"))
                 
         
@@ -171,7 +171,7 @@ class SubscriptionRoute(APIRouter):
         if not items:
             raise HTTPException(status_code=400, detail="Invalid plan ID")
 
-        payment_data = self.payment.create(items, plan.get("price"))
+        payment_data = await self.payment.create(items, plan.get("price"))
 
         if not payment_data:
             raise HTTPException(status_code=500, detail="Error creating payment link")
@@ -328,7 +328,7 @@ class SubscriptionRoute(APIRouter):
             logger.info(f"Order {order_id} is already finished, cannot cancel")
             raise HTTPException(status_code=400, detail="Order already finished")
 
-        self.payment.cancel(order_id)
+        await self.payment.cancel(order_id)
         await self.order_code_cache.delete_order_code(order_id)
         await self.request_cache.delete_request(order_data.get("user_id"))
 

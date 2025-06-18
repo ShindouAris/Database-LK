@@ -1,7 +1,5 @@
 from payos import PaymentData, PayOS, ItemData
 from os import environ
-from fastapi import HTTPException
-from json import loads
 from datetime import datetime, timezone
 from logging import getLogger
 
@@ -15,8 +13,9 @@ class Payment(PayOS):
         super().__init__(PAYOS_CLIENT_ID, PAYOS_API_KEY, PAYOS_CHECKSUM_KEY)
         self.confirmWebhook = PAYOS_CONFIRM_WEBHOOK
         self.logger = getLogger(__name__)
-    
-    def choose_items(self, plan_id: str) -> ItemData | None:
+
+    @staticmethod
+    def choose_items(plan_id: str) -> ItemData | None:
         match plan_id:
             case "premium_lite":
                 return ItemData(
@@ -39,10 +38,10 @@ class Payment(PayOS):
             case _:
                 return None
     
-    def create(self, items: ItemData, amount: int) -> dict | None:
+    async def create(self, items: ItemData, amount: int) -> dict | None:
         try:
             payment_data = PaymentData(orderCode=int(datetime.now(timezone.utc).timestamp()), items=[items], description="Mua gói trên web", cancelUrl="/", returnUrl="/", amount=amount)
-            payosCreatePayment = self.createPaymentLink(payment_data)
+            payosCreatePayment = await self.createPaymentLink(payment_data)
 
             return {
                 "qr_code": payosCreatePayment.qrCode,
@@ -52,10 +51,10 @@ class Payment(PayOS):
             self.logger.error(f"Error creating payment: {e}")
             return None
 
-    def cancel(self, order_code: str):
+    async def cancel(self, order_code: str):
         try:
             self.logger.info(f"Cancelling payment: {order_code}")
-            payosCancelPayment = self.cancelPaymentLink(order_code)
+            payosCancelPayment = await self.cancelPaymentLink(order_code)
             return payosCancelPayment.status
         except Exception as e:
             self.logger.error(f"Error canceling payment: {e}")

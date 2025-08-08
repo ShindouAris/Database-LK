@@ -6,5 +6,4 @@ disnake
 motor>=3.3.2
 payos-async
 colorama
-httpx
-certifi>=2025.8.3
+aiohttp

@@ -1,9 +1,7 @@
 from fastapi import APIRouter
 from routes.models import TimelinesResponse, CaptionsResponse, DonatorsResponse, ThemesResponse, Options, UserInfo, Stats, Notification, NotificationResponse
 from utils.read_data import get_captions_post, get_timelines, get_donators, get_themes, get_notifications
-
-import httpx
-import certifi
+import aiohttp
 
 class LocketProRouter(APIRouter):
     def __init__(self, *args, **kwargs):
@@ -16,7 +14,7 @@ class LocketProRouter(APIRouter):
 
     async def get_user_themes(self, next_token: str | None = None):
         data = get_captions_post()
-        async with httpx.AsyncClient(verify=certifi.where()) as client:
+        async with aiohttp.ClientSession() as client:
             data = await client.get(f"https://api.chisadin.site/api/get_captionV2{f'?next_token={next_token}' if next_token else ''}")
         return data.json()
 

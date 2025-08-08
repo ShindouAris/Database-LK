@@ -2,6 +2,8 @@ from fastapi import APIRouter
 from routes.models import TimelinesResponse, CaptionsResponse, DonatorsResponse, ThemesResponse, Options, UserInfo, Stats, Notification, NotificationResponse
 from utils.read_data import get_captions_post, get_timelines, get_donators, get_themes, get_notifications
 
+import httpx
+
 class LocketProRouter(APIRouter):
     def __init__(self, *args, **kwargs):
         super().__init__(prefix="/locketpro", *args, **kwargs)
@@ -11,21 +13,11 @@ class LocketProRouter(APIRouter):
         self.add_api_route("/donations", self.get_donators, methods=["GET"])
         self.add_api_route("/notification", self.get_notifications, methods=["GET"])
 
-    async def get_user_themes(self):
+    async def get_user_themes(self, next_token: str | None = None):
         data = get_captions_post()
-        list_data = []
-
-        if data:
-            for item in data:
-                list_data.append(CaptionsResponse(
-                    id=item["id"],
-                    uid=item["uid"],
-                    options=Options(**item["options"]),
-                    user_info=UserInfo(**item["user_info"]),
-                    stats=Stats(**item["stats"]),
-                    created_at=item["created_at"]))
-        
-        return list_data
+        async with httpx.AsyncClient() as client:
+            data = await client.get(f"https://api.chisadin.site/api/get_captionV2{f'?next_token={next_token}' if next_token else ''}")
+        return data.json()
 
     async def get_themes(self):
         data = get_themes()

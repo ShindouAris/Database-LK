@@ -13,10 +13,9 @@ class LocketProRouter(APIRouter):
         self.add_api_route("/notification", self.get_notifications, methods=["GET"])
 
     async def get_user_themes(self, next_token: str | None = None):
-        data = get_captions_post()
         async with aiohttp.ClientSession() as client:
             data = await client.get(f"https://api.chisadin.site/api/get_captionV2{f'?next_token={next_token}' if next_token else ''}")
-        return await data.json()
+            return await data.json()
 
     async def get_themes(self):
         data = get_themes()

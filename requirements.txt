@@ -6,3 +6,4 @@ disnake
 motor>=3.3.2
 payos-async
 colorama
+httpx

@@ -4,6 +4,7 @@ from logging import getLogger
 from utils.logger import LOGGING_CONFIG
 from routes.global_db import LocketProRouter
 from routes.subscription_route import SubscriptionRoute
+from routes.utils import UtilsRouter
 import datetime
 from dotenv import load_dotenv
 import os
@@ -24,6 +25,7 @@ class LocketUploaderDB(FastAPI):
         self.uptime = datetime.datetime.now(datetime.timezone.utc).timestamp()
         self.include_router(LocketProRouter())
         self.include_router(SubscriptionRoute())
+        self.include_router(UtilsRouter())
         self.add_api_route("/status", self.get_status, methods=["GET", "HEAD"])
     
     async def get_status(self):

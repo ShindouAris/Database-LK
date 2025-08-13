@@ -7,5 +7,5 @@ motor>=3.3.2
 payos-async
 colorama
 aiohttp
-request
+requests
 beautifulsoup4
